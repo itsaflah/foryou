@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For You</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* BASE SETTINGS */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+
+        body {
+            height: 100dvh; /* Fixes mobile browser bar jumping */
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f0505 0%, #2b0808 50%, #0f0505 100%);
+            font-family: 'Montserrat', sans-serif;
+            color: white;
+        }
+
+        /* FLOATING BACKGROUND */
+        .bg-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150vw; height: 150vw;
+            background: radial-gradient(circle, rgba(220, 20, 60, 0.2) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: pulse 8s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        /* GLASS CARD */
+        .container {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 2rem;
+            border-radius: 30px;
+            text-align: center;
+            width: 85%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-style: italic;
+            line-height: 1.2;
+            background: linear-gradient(to bottom right, #fff, #ffb3b3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* BUTTON CONTAINER */
+        .btn-group {
+            display: flex;
+            flex-direction: column; /* Stacked vertical */
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            min-height: 160px; /* Space for them to move around */
+        }
+
+        /* BUTTON STYLES */
+        button {
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: 600;
+            transition: transform 0.1s;
+        }
+
+        /* BIG YES BUTTON */
+        #yesBtn {
+            padding: 1.2rem 0;
+            width: 100%;
+            font-size: 1.2rem;
+            background: #fff;
+            color: #2b0808;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+            letter-spacing: 2px;
+            z-index: 20;
+        }
+        #yesBtn:active { transform: scale(0.98); }
+
+        /* SMALL NO BUTTON */
+        #noBtn {
+            padding: 0.8rem 2rem; /* Much smaller padding */
+            font-size: 0.8rem;    /* Smaller text */
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+            position: relative;   /* Starts relative, becomes absolute */
+            z-index: 100;         /* Above everything */
+            
+            /* THE SMOOTH GLIDE MAGIC */
+            /* 0.2s is fast enough to escape, but slow enough to see it glide */
+            transition: top 0.5s ease-out, left 0.5s ease-out; 
+        }
+
+        /* HIDDEN HITBOX (Makes it easier to trigger the run) */
+        #noBtn::before {
+            content: '';
+            position: absolute;
+            top: -20px; bottom: -20px; left: -20px; right: -20px;
+            z-index: -1;
+        }
+
+        #success-message {
+            display: none;
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: white;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="container">
+        <h1 id="question">Will you be my Valendenn?</h1>
+        
+        <div class="btn-group" id="btnGroup">
+            <button id="yesBtn">YES</button>
+            <button id="noBtn">NO</button>
+        </div>
+
+        <div id="success-message">
+            I knew it. ❤️<br>
+            <span style="font-size: 0.9rem; font-family: 'Montserrat'; opacity: 0.6; display:block; margin-top:15px; font-weight: 300;">(Screenshots took automatically... kidding)</span>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const question = document.getElementById('question');
+        const btnGroup = document.getElementById('btnGroup');
+        const successMsg = document.getElementById('success-message');
+
+        function moveButton(e) {
+            // Prevent the click if it was a touch event
+            if(e && e.type === 'touchstart') e.preventDefault();
+
+            // Mobile Vibration
+            if (navigator.vibrate) navigator.vibrate(40);
+
+            // Get Window & Button Dimensions
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const btnW = noBtn.offsetWidth;
+            const btnH = noBtn.offsetHeight;
+
+            // Calculate Random Position
+            // We use a buffer of 30px so it doesn't touch the screen edge
+            const buffer = 30;
+            const randomX = Math.random() * (w - btnW - (buffer * 2)) + buffer;
+            const randomY = Math.random() * (h - btnH - (buffer * 2)) + buffer;
+
+            // Apply New Position
+            noBtn.style.position = 'absolute';
+            noBtn.style.left = `${randomX}px`;
+            noBtn.style.top = `${randomY}px`;
+            
+            // Random Rotation for "tumble" effect
+            const randomRot = (Math.random() * 20) - 10;
+            noBtn.style.transform = `rotate(${randomRot}deg)`;
+        }
+
+        // TRIGGER EVENTS
+        // 1. TouchStart: Fired immediately when finger hits screen (Mobile)
+        noBtn.addEventListener('touchstart', moveButton, { passive: false });
+        
+        // 2. MouseOver: Fired when cursor enters button (Desktop)
+        noBtn.addEventListener('mouseover', moveButton);
+        
+        // 3. Click: Failsafe
+        noBtn.addEventListener('click', moveButton);
+
+
+        // YES BUTTON LOGIC
+        yesBtn.addEventListener('click', () => {
+            question.style.display = 'none';
+            btnGroup.style.display = 'none';
+            successMsg.style.display = 'block';
+
+            // Confetti Explosion
+            var duration = 3000;
+            var end = Date.now() + duration;
+
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#ffffff'] });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#ffffff'] });
+
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        });
+    </script>
+</body>
+</html>

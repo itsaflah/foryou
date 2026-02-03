@@ -11,7 +11,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
 
         body {
-            height: 100dvh; /* Fixes mobile browser bar jumping */
+            height: 100dvh;
             width: 100vw;
             overflow: hidden;
             display: flex;
@@ -21,6 +21,7 @@
             background: linear-gradient(135deg, #0f0505 0%, #2b0808 50%, #0f0505 100%);
             font-family: 'Montserrat', sans-serif;
             color: white;
+            position: relative; /* Anchor for absolute positioning */
         }
 
         /* FLOATING BACKGROUND */
@@ -71,11 +72,11 @@
         /* BUTTON CONTAINER */
         .btn-group {
             display: flex;
-            flex-direction: column; /* Stacked vertical */
+            flex-direction: column;
             align-items: center;
             gap: 1rem;
             width: 100%;
-            min-height: 160px; /* Space for them to move around */
+            min-height: 160px;
         }
 
         /* BUTTON STYLES */
@@ -103,25 +104,24 @@
 
         /* SMALL NO BUTTON */
         #noBtn {
-            padding: 0.8rem 2rem; /* Much smaller padding */
-            font-size: 0.8rem;    /* Smaller text */
+            padding: 0.8rem 2rem;
+            font-size: 0.8rem;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: rgba(255, 255, 255, 0.5);
             letter-spacing: 1px;
-            position: relative;   /* Starts relative, becomes absolute */
-            z-index: 100;         /* Above everything */
+            /* No fixed position initially */
+            z-index: 100;
             
-            /* THE SMOOTH GLIDE MAGIC */
-            /* 0.2s is fast enough to escape, but slow enough to see it glide */
-            transition: top 0.5s ease-out, left 0.5s ease-out; 
+            /* Slower transition for the glide */
+            transition: top 0.4s ease-out, left 0.4s ease-out; 
         }
 
-        /* HIDDEN HITBOX (Makes it easier to trigger the run) */
+        /* HIDDEN HITBOX */
         #noBtn::before {
             content: '';
             position: absolute;
-            top: -20px; bottom: -20px; left: -20px; right: -20px;
+            top: -30px; bottom: -30px; left: -30px; right: -30px;
             z-index: -1;
         }
 
@@ -167,8 +167,13 @@
         const successMsg = document.getElementById('success-message');
 
         function moveButton(e) {
-            // Prevent the click if it was a touch event
+            // Prevent touch scrolling/clicking
             if(e && e.type === 'touchstart') e.preventDefault();
+
+            // 1. CRITICAL FIX: Move button to body so coordinates match the screen
+            if (noBtn.parentNode !== document.body) {
+                document.body.appendChild(noBtn);
+            }
 
             // Mobile Vibration
             if (navigator.vibrate) navigator.vibrate(40);
@@ -180,7 +185,7 @@
             const btnH = noBtn.offsetHeight;
 
             // Calculate Random Position
-            // We use a buffer of 30px so it doesn't touch the screen edge
+            // Buffer keeps it away from the very edge
             const buffer = 30;
             const randomX = Math.random() * (w - btnW - (buffer * 2)) + buffer;
             const randomY = Math.random() * (h - btnH - (buffer * 2)) + buffer;
@@ -190,29 +195,25 @@
             noBtn.style.left = `${randomX}px`;
             noBtn.style.top = `${randomY}px`;
             
-            // Random Rotation for "tumble" effect
+            // Random Rotation
             const randomRot = (Math.random() * 20) - 10;
             noBtn.style.transform = `rotate(${randomRot}deg)`;
         }
 
         // TRIGGER EVENTS
-        // 1. TouchStart: Fired immediately when finger hits screen (Mobile)
         noBtn.addEventListener('touchstart', moveButton, { passive: false });
-        
-        // 2. MouseOver: Fired when cursor enters button (Desktop)
         noBtn.addEventListener('mouseover', moveButton);
-        
-        // 3. Click: Failsafe
         noBtn.addEventListener('click', moveButton);
-
 
         // YES BUTTON LOGIC
         yesBtn.addEventListener('click', () => {
             question.style.display = 'none';
             btnGroup.style.display = 'none';
+            // Hide the No button if it's floating around
+            noBtn.style.display = 'none'; 
             successMsg.style.display = 'block';
 
-            // Confetti Explosion
+            // Confetti
             var duration = 3000;
             var end = Date.now() + duration;
 

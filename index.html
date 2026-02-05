@@ -1,14 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>For You</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;500;600&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;500;600&display=swap"
+        rel="stylesheet">
+
     <style>
         /* BASE SETTINGS */
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
 
         body {
             height: 100dvh;
@@ -27,18 +37,29 @@
         /* FLOATING BACKGROUND */
         .bg-glow {
             position: absolute;
-            top: 50%; left: 50%;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            width: 150vw; height: 150vw;
-            background: radial-gradient(circle, rgba(220, 20, 60, 0.2) 0%, rgba(0,0,0,0) 70%);
+            width: 150vw;
+            height: 150vw;
+            background: radial-gradient(circle, rgba(220, 20, 60, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
             border-radius: 50%;
             pointer-events: none;
             animation: pulse 8s infinite ease-in-out;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
+
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
         }
 
         /* GLASS CARD (Shared Style) */
@@ -54,14 +75,17 @@
             text-align: center;
             width: 85%;
             max-width: 500px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-            display: none; /* Hidden by default, JS toggles this */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            display: none;
+            /* Hidden by default, JS toggles this */
             flex-direction: column;
             gap: 2rem;
         }
 
         /* Active class to show card */
-        .glass-card.active { display: flex; }
+        .glass-card.active {
+            display: flex;
+        }
 
         h1 {
             font-family: 'Playfair Display', serif;
@@ -80,12 +104,12 @@
             gap: 15px;
             width: 100%;
         }
-        
+
         input {
             width: 100%;
             padding: 15px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px;
             color: white;
             font-family: 'Montserrat', sans-serif;
@@ -94,7 +118,10 @@
             text-align: center;
         }
 
-        input:focus { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.1); }
+        input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.1);
+        }
 
         .gen-btn {
             background: white;
@@ -111,13 +138,14 @@
         .link-result {
             margin-top: 15px;
             padding: 10px;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
             font-size: 0.8rem;
             color: #aaa;
             word-break: break-all;
             display: none;
-            user-select: text; /* Allow copying */
+            user-select: text;
+            /* Allow copying */
         }
 
         /* --- VALENTINE CARD STYLES --- */
@@ -149,7 +177,10 @@
             letter-spacing: 2px;
             z-index: 20;
         }
-        #yesBtn:active { transform: scale(0.98); }
+
+        #yesBtn:active {
+            transform: scale(0.98);
+        }
 
         #noBtn {
             padding: 0.8rem 2rem;
@@ -159,13 +190,16 @@
             color: rgba(255, 255, 255, 0.5);
             letter-spacing: 1px;
             z-index: 100;
-            transition: top 0.4s ease-out, left 0.4s ease-out; 
+            transition: top 0.4s ease-out, left 0.4s ease-out;
         }
 
         #noBtn::before {
             content: '';
             position: absolute;
-            top: -30px; bottom: -30px; left: -30px; right: -30px;
+            top: -30px;
+            bottom: -30px;
+            left: -30px;
+            right: -30px;
             z-index: -1;
         }
 
@@ -178,40 +212,53 @@
         }
 
         @keyframes popIn {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="bg-glow"></div>
 
     <div class="glass-card" id="generator-card">
         <h1>Create Your Own</h1>
-        <p style="opacity: 0.7; font-size: 0.9rem;">Enter names to generate a custom link.</p>
-        
+        <p style="opacity: 0.7; font-size: 0.9rem;">Enter names to generate Valentine Web.</p>
+
         <div class="input-group">
             <input type="text" id="g-from" placeholder="Your Name">
             <input type="text" id="g-to" placeholder="Your Valentine">
             <button class="gen-btn" onclick="createLink()">Generate Link</button>
         </div>
-        
+
         <div class="link-result" id="result-link"></div>
     </div>
 
     <div class="glass-card" id="main-card">
         <h1 id="question">Will you be my Valentine?</h1>
-        
+
         <div class="btn-group" id="btnGroup">
             <button class="action-btn" id="yesBtn">YES</button>
             <button class="action-btn" id="noBtn">NO</button>
         </div>
 
         <div id="success-message">
-            I knew it. ❤️<br>
-            <span id="sender-signature" style="font-size: 1.2rem; display:block; margin-top:10px; color:#ffb3b3;"></span>
-            <span style="font-size: 0.8rem; font-family: 'Montserrat'; opacity: 0.5; display:block; margin-top:20px; font-weight: 300;">(Screenshots took automatically... kidding)</span>
+            You have a good taste...<br>
+            That was the right choice...❤️<br>
+            <span id="sender-signature"
+                style="font-size: 1.2rem; display:block; margin-top:10px; color:#ffb3b3;"></span>
+            <span
+                style="font-size: 0.8rem; font-family: 'Montserrat'; opacity: 0.5; display:block; margin-top:20px; font-weight: 300;">
+                That was exactly what i hoped for...
+            </span>
         </div>
     </div>
 
@@ -231,11 +278,11 @@
         if (toName) {
             // VIEW MODE: Names are present
             mainCard.classList.add('active');
-            
+
             // 1. Update the Question
             // Use textContent for safety against XSS
             questionText.textContent = toName + ", will you be my Valentine?";
-            
+
             // 2. Prepare the Sender Signature
             if (fromName) {
                 senderSig.textContent = "- Love, " + fromName;
@@ -253,14 +300,14 @@
 
             const baseUrl = window.location.origin + window.location.pathname;
             const link = `${baseUrl}?to=${encodeURIComponent(t)}&from=${encodeURIComponent(f)}`;
-            
+
             const resDiv = document.getElementById('result-link');
             resDiv.style.display = 'block';
             resDiv.textContent = link;
-            
+
             // Auto copy
             navigator.clipboard.writeText(link);
-            alert("Link copied to clipboard!");
+            alert("Link copied to clipboard! paste the link to your valentine ");
         }
 
         // --- EXISTING GAME LOGIC ---
@@ -270,7 +317,7 @@
         const successMsg = document.getElementById('success-message');
 
         function moveButton(e) {
-            if(e && e.type === 'touchstart') e.preventDefault();
+            if (e && e.type === 'touchstart') e.preventDefault();
             if (noBtn.parentNode !== document.body) document.body.appendChild(noBtn);
             if (navigator.vibrate) navigator.vibrate(40);
 
@@ -279,14 +326,14 @@
             const btnW = noBtn.offsetWidth;
             const btnH = noBtn.offsetHeight;
             const buffer = 30;
-            
+
             const randomX = Math.random() * (w - btnW - (buffer * 2)) + buffer;
             const randomY = Math.random() * (h - btnH - (buffer * 2)) + buffer;
 
             noBtn.style.position = 'absolute';
             noBtn.style.left = `${randomX}px`;
             noBtn.style.top = `${randomY}px`;
-            
+
             const randomRot = (Math.random() * 20) - 10;
             noBtn.style.transform = `rotate(${randomRot}deg)`;
         }
@@ -298,7 +345,7 @@
         yesBtn.addEventListener('click', () => {
             questionText.style.display = 'none';
             btnGroup.style.display = 'none';
-            noBtn.style.display = 'none'; 
+            noBtn.style.display = 'none';
             successMsg.style.display = 'block';
 
             var duration = 3000;
@@ -311,4 +358,5 @@
         });
     </script>
 </body>
+
 </html>

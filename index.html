@@ -264,31 +264,27 @@
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script>
+   <script>
         // --- LOGIC TO HANDLE URL NAMES ---
         const params = new URLSearchParams(window.location.search);
-        const toName = params.get('to'); // Gets ?to=Name
-        const fromName = params.get('from'); // Gets &from=Name
+        const toName = params.get('to') || "Someone"; 
+        const fromName = params.get('from') || "Secret Admirer";
 
         const genCard = document.getElementById('generator-card');
         const mainCard = document.getElementById('main-card');
         const questionText = document.getElementById('question');
         const senderSig = document.getElementById('sender-signature');
 
-        if (toName) {
-            // VIEW MODE: Names are present
+        // Check if we are in "View Mode" (someone received the link)
+        if (params.has('to')) {
             mainCard.classList.add('active');
-
-            // 1. Update the Question
-            // Use textContent for safety against XSS
             questionText.textContent = toName + ", will you be my Valentine?";
-
-            // 2. Prepare the Sender Signature
-            if (fromName) {
+            
+            if (params.has('from')) {
                 senderSig.textContent = "- Love, " + fromName;
             }
         } else {
-            // GENERATOR MODE: No names, show form
+            // "Generator Mode" (creating the link)
             genCard.classList.add('active');
         }
 
@@ -305,12 +301,30 @@
             resDiv.style.display = 'block';
             resDiv.textContent = link;
 
-            // Auto copy
             navigator.clipboard.writeText(link);
-            alert("Link copied to clipboard! paste the link to your valentine ");
+            alert("Link copied! Send it to your valentine.");
         }
 
-        // --- EXISTING GAME LOGIC ---
+        // --- GOOGLE FORM CONNECTION ---
+        function sendToGoogleForm() {
+            const formURL = "https://docs.google.com/forms/u/0/d/e/1FAIpQLScfyskYFHtjBHJKEfaXoWZvGmuwLgZZOx1AOCHD8eOwZgBFvQ/formResponse";
+            
+            // Create a hidden form data object
+            const formData = new FormData();
+            formData.append("entry.1497303076", toName);   // The Valentine's Name
+            formData.append("entry.2122851436", fromName); // The Sender's Name
+
+            // Send data silently using fetch (no-cors mode prevents errors on cross-origin)
+            fetch(formURL, {
+                method: "POST",
+                mode: "no-cors",
+                body: formData
+            }).then(() => {
+                console.log("Response sent to Google Form!");
+            }).catch(err => console.error("Error sending response", err));
+        }
+
+        // --- INTERACTIVE GAME LOGIC ---
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
         const btnGroup = document.getElementById('btnGroup');
@@ -319,8 +333,7 @@
         function moveButton(e) {
             if (e && e.type === 'touchstart') e.preventDefault();
             if (noBtn.parentNode !== document.body) document.body.appendChild(noBtn);
-            if (navigator.vibrate) navigator.vibrate(40);
-
+            
             const w = window.innerWidth;
             const h = window.innerHeight;
             const btnW = noBtn.offsetWidth;
@@ -333,9 +346,6 @@
             noBtn.style.position = 'absolute';
             noBtn.style.left = `${randomX}px`;
             noBtn.style.top = `${randomY}px`;
-
-            const randomRot = (Math.random() * 20) - 10;
-            noBtn.style.transform = `rotate(${randomRot}deg)`;
         }
 
         noBtn.addEventListener('touchstart', moveButton, { passive: false });
@@ -343,11 +353,13 @@
         noBtn.addEventListener('click', moveButton);
 
         yesBtn.addEventListener('click', () => {
+            // 1. Hide buttons and show message
             questionText.style.display = 'none';
             btnGroup.style.display = 'none';
             noBtn.style.display = 'none';
             successMsg.style.display = 'block';
 
+            // 2. Trigger Confetti
             var duration = 3000;
             var end = Date.now() + duration;
             (function frame() {
@@ -355,6 +367,9 @@
                 confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#ffffff'] });
                 if (Date.now() < end) requestAnimationFrame(frame);
             }());
+
+            // 3. SEND RESPONSE TO GOOGLE FORM
+            sendToGoogleForm(); 
         });
     </script>
 </body>
